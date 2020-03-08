@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"io"
 	"os"
 	"time"
 
@@ -11,26 +12,26 @@ import (
 
 /*Zlog zap logger*/
 type Zlog struct {
-	_logger          *zap.SugaredLogger //SugaredLogger
-	callerSkip       int                //CallerSkip次数
-	logLevel         zap.AtomicLevel    //日志记录级别
-	projectName      string             //项目名称
-	fileName         string             //日志保存路径和名称
-	fileRotationTime int                //分割日志的时间间隔（小时）
-	fileMaxAge       int                //日志保存的时间（小时）
-	stacktrace       string             //记录堆栈的级别
+	_logger           *zap.SugaredLogger //SugaredLogger
+	callerSkip        int                //CallerSkip次数
+	logLevel          zap.AtomicLevel    //日志记录级别
+	projectName       string             //项目名称
+	fileName          string             //日志保存路径和名称
+	fileRotationTime  uint               //日志切割时间间隔
+	fileRotationCount uint               // 文件最大保存份数
+	stacktrace        string             //记录堆栈的级别
 }
 
 /*NewLogger New logger*/
 func NewLogger() *Zlog {
 	log := &Zlog{
-		callerSkip:       1,
-		logLevel:         zap.NewAtomicLevel(),
-		projectName:      "",
-		fileName:         "",
-		fileRotationTime: 24,
-		fileMaxAge:       7 * 24,
-		stacktrace:       "panic",
+		callerSkip:        1,
+		logLevel:          zap.NewAtomicLevel(),
+		projectName:       "",
+		fileName:          "",
+		fileRotationTime:  24,
+		fileRotationCount: 7,
+		stacktrace:        "panic",
 	}
 	log.logLevel.SetLevel(zap.InfoLevel)
 	log.build()
@@ -56,26 +57,19 @@ func (z *Zlog) build() {
 	// 初始化core
 	var core zapcore.Core
 
-	if z.fileLogName != "" {
-		hook, err := rotatelogs.New(
-			z.fileLogName+".%Y%m%d",
-			rotatelogs.WithLinkName(z.fileLogName),
-			rotatelogs.WithMaxAge(time.Hour*z.fileMaxAge),
-			rotatelogs.WithRotationTime(time.Hour*z.fileRotationTime),
-		)
-		if err != nil {
-			panic(err)
-		}
+	if z.fileName != "" {
+		hook := getWriter(z.fileName, z.fileRotationTime, z.fileRotationCount)
+
 		core = zapcore.NewCore(
 			zapcore.NewJSONEncoder(encoderConfig),
-			zapcore.NewMultiWriteSyncer(zapcore.AddSync(&hook)),
+			zapcore.AddSync(hook),
 			z.logLevel,
 		)
 
 	} else {
 		core = zapcore.NewCore(
 			zapcore.NewJSONEncoder(encoderConfig),
-			zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout)),
+			zapcore.AddSync(os.Stdout),
 			z.logLevel,
 		)
 	}
@@ -86,6 +80,19 @@ func (z *Zlog) build() {
 	if z.projectName != "" {
 		z._logger = z._logger.Named(z.projectName)
 	}
+}
+
+func getWriter(filename string, rotationTime, rotationCount uint) io.Writer {
+	hook, err := rotatelogs.New(
+		filename+".%Y%m%d%H",
+		rotatelogs.WithLinkName(filename), // 生成软链，指向最新日志文件
+		rotatelogs.WithRotationTime(time.Duration(rotationTime)*time.Hour), // 日志切割时间间隔
+		rotatelogs.WithRotationCount(rotationCount),                        // 文件最大保存份数
+	)
+	if err != nil {
+		panic(err)
+	}
+	return hook
 }
 
 /*getLevelByString 通过字符串获取zaplog等级*/
@@ -192,9 +199,9 @@ func (z *Zlog) SetCallerSkip(callerSkip int) {
 }
 
 /*SetLogFile 设置日志文件*/
-func (z *Zlog) SetLogFile(fileName string, fileRotationTime, fileMaxAge int) {
+func (z *Zlog) SetLogFile(fileName string, rotationTime, rotationCount uint) {
 	z.fileName = fileName
-	z.fileRotationTime = fileRotationTime
-	z.fileMaxAge = fileMaxAge
+	z.fileRotationTime = rotationTime
+	z.fileRotationCount = rotationCount
 	z.build()
 }
