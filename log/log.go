@@ -5,7 +5,7 @@ import "github.com/blessmylovexy/pkg/logger"
 var log = logger.NewLogger()
 
 func init() {
-	log.SetCallerSkip(3)
+	log.SetCallerSkip(2)
 }
 
 /*Debug Debug log*/
@@ -81,9 +81,4 @@ func SetProjectName(projectName string) {
 /*SetStacktraceLevel 设置堆栈跟踪的日志级别*/
 func SetStacktraceLevel(level string) {
 	log.SetStacktraceLevel(level)
-}
-
-/*SetCallerSkip 设置日志名字*/
-func SetCallerSkip(callerSkip int) {
-	log.SetCallerSkip(callerSkip)
 }
