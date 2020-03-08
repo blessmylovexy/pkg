@@ -84,6 +84,6 @@ func SetStacktraceLevel(level string) {
 }
 
 /*SetLogFile 设置日志文件*/
-func SetLogFile(fileName string, fileRotationTime, fileMaxAge int) {
-	log.SetLogFile(fileName, fileRotationTime, fileMaxAge)
+func SetLogFile(fileName string, rotationTime, rotationCount uint) {
+	log.SetLogFile(fileName, rotationTime, rotationCount)
 }
