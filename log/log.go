@@ -82,3 +82,8 @@ func SetProjectName(projectName string) {
 func SetStacktraceLevel(level string) {
 	log.SetStacktraceLevel(level)
 }
+
+/*SetCallerSkip 设置日志名字*/
+func SetCallerSkip(callerSkip int) {
+	log.SetCallerSkip(callerSkip)
+}
