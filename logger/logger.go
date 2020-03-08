@@ -143,7 +143,7 @@ func (z *zlog) Infof(template string, args ...interface{}) {
 
 /*Warn Warn log*/
 func (z *zlog) Warn(args ...interface{}) {
-	z._logger.Info(args...)
+	z._logger.Warn(args...)
 }
 
 /*Warnf Warn format log*/
@@ -173,7 +173,7 @@ func (z *zlog) Panicf(template string, args ...interface{}) {
 
 /*Fatal Fatal log*/
 func (z *zlog) Fatal(args ...interface{}) {
-	z._logger.Panic(args...)
+	z._logger.Fatal(args...)
 }
 
 /*Fatalf Fatal format log*/
