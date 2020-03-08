@@ -73,7 +73,7 @@ func SetLogLevel(level string) {
 	log.SetLogLevel(level)
 }
 
-/*SetCallerSkip 设置日志名字*/
+/*SetProjectName 设置日志名字*/
 func SetProjectName(projectName string) {
 	log.SetProjectName(projectName)
 }
@@ -81,4 +81,9 @@ func SetProjectName(projectName string) {
 /*SetStacktraceLevel 设置堆栈跟踪的日志级别*/
 func SetStacktraceLevel(level string) {
 	log.SetStacktraceLevel(level)
+}
+
+/*SetLogFile 设置日志文件*/
+func SetLogFile(fileName string, fileRotationTime, fileMaxAge int) {
+	log.SetLogFile(fileName, fileRotationTime, fileMaxAge)
 }
